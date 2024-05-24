@@ -29,6 +29,13 @@ function App() {
     }
   };
   const timeZoneOffset = new Date().getTimezoneOffset() * 60;
+  const dateTimeFormat = new Intl.DateTimeFormat("en-US", {
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
   useEffect(() => {
     let ignore = false;
@@ -50,27 +57,30 @@ function App() {
 
   return (
     <>
-      {events.map((event) => (
-        <div key={event.id}>
-          {event.timestamp} {event.name} {event.memo}
-          <button
-            type="button"
-            onClick={async () => {
-              const deleteResponse = await fetch(
-                `${baseUrl}/v1/events/${event.id}`,
-                {
-                  method: "DELETE",
+      {events
+        .sort((e1, e2) => e1.timestamp - e2.timestamp)
+        .map((event) => (
+          <div key={event.id}>
+            {dateTimeFormat.format(new Date(event.timestamp * 1000))}{" "}
+            {event.name} {event.memo}
+            <button
+              type="button"
+              onClick={async () => {
+                const deleteResponse = await fetch(
+                  `${baseUrl}/v1/events/${event.id}`,
+                  {
+                    method: "DELETE",
+                  }
+                );
+                if (deleteResponse.ok) {
+                  setEvents([...events].filter((e) => e.id != event.id));
                 }
-              );
-              if (deleteResponse.ok) {
-                setEvents([...events].filter((e) => e.id != event.id));
-              }
-            }}
-          >
-            Delete
-          </button>
-        </div>
-      ))}
+              }}
+            >
+              Delete
+            </button>
+          </div>
+        ))}
       <form onSubmit={handleSubmit(submitHandler)}>
         <Controller
           name="timestamp"
