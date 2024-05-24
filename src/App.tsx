@@ -11,10 +11,11 @@ type Event = {
 type EventWithId = { id: number } & Event;
 
 function App() {
+  const baseUrl = "http://192.168.1.11:3000";
   const [events, setEvents] = useState<EventWithId[]>([]);
   const { register, handleSubmit, control, reset } = useForm<Event>();
   const submitHandler: SubmitHandler<Event> = async (data) => {
-    const addResponse = await fetch("http://192.168.1.11:3000/v1/events/", {
+    const addResponse = await fetch(`${baseUrl}/v1/events/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -33,7 +34,7 @@ function App() {
     let ignore = false;
 
     async function fetchEvents() {
-      const eventsResponse = await fetch("http://192.168.1.11:3000/v1/events");
+      const eventsResponse = await fetch(`${baseUrl}/v1/events/`);
       if (!ignore && eventsResponse.ok) {
         const eventsData = await eventsResponse.json();
         setEvents(eventsData);
@@ -52,6 +53,22 @@ function App() {
       {events.map((event) => (
         <div key={event.id}>
           {event.timestamp} {event.name} {event.memo}
+          <button
+            type="button"
+            onClick={async () => {
+              const deleteResponse = await fetch(
+                `${baseUrl}/v1/events/${event.id}`,
+                {
+                  method: "DELETE",
+                }
+              );
+              if (deleteResponse.ok) {
+                setEvents([...events].filter((e) => e.id != event.id));
+              }
+            }}
+          >
+            Delete
+          </button>
         </div>
       ))}
       <form onSubmit={handleSubmit(submitHandler)}>
