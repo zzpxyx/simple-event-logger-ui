@@ -2,13 +2,15 @@ import { useEffect, useState } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import "./App.css";
 
-type Event = {
+interface Event {
   timestamp: number;
   name: string;
   memo: string;
-};
+}
 
-type EventWithId = { id: number } & Event;
+interface EventWithId extends Event {
+  id: number;
+}
 
 function App() {
   const baseUrl = "http://192.168.1.11:3000";
@@ -24,7 +26,7 @@ function App() {
     });
     if (addResponse.ok) {
       reset();
-      const addData = await addResponse.json();
+      const addData = (await addResponse.json()) as EventWithId;
       setEvents([...events, addData]);
     }
   };
@@ -52,12 +54,12 @@ function App() {
     async function fetchEvents() {
       const eventsResponse = await fetch(`${baseUrl}/v1/events/`);
       if (!ignore && eventsResponse.ok) {
-        const eventsData = await eventsResponse.json();
+        const eventsData = (await eventsResponse.json()) as EventWithId[];
         setEvents(eventsData);
       }
     }
 
-    fetchEvents();
+    void fetchEvents();
 
     return () => {
       ignore = true;
@@ -74,23 +76,29 @@ function App() {
             {event.name} {event.memo}
             <button
               type="button"
-              onClick={async () => {
-                const deleteResponse = await fetch(
-                  `${baseUrl}/v1/events/${event.id}`,
-                  {
-                    method: "DELETE",
+              onClick={() => {
+                void (async () => {
+                  const deleteResponse = await fetch(
+                    `${baseUrl}/v1/events/${event.id}`,
+                    {
+                      method: "DELETE",
+                    }
+                  );
+                  if (deleteResponse.ok) {
+                    setEvents([...events].filter((e) => e.id != event.id));
                   }
-                );
-                if (deleteResponse.ok) {
-                  setEvents([...events].filter((e) => e.id != event.id));
-                }
+                })();
               }}
             >
               Delete
             </button>
           </div>
         ))}
-      <form onSubmit={handleSubmit(submitHandler)}>
+      <form
+        onSubmit={(e) => {
+          void handleSubmit(submitHandler)(e);
+        }}
+      >
         <Controller
           name="timestamp"
           control={control}
@@ -113,19 +121,21 @@ function App() {
         <input type="text" {...register("memo")}></input>
         <button type="submit">Add</button>
         <div>
-          {import.meta.env.VITE_PRESETS.split(",").map((preset: string) => (
-            <button
-              type="button"
-              key={preset}
-              onClick={() => {
-                setValue("timestamp", Date.now() / 1000);
-                setValue("name", preset);
-                setValue("memo", "");
-              }}
-            >
-              {preset}
-            </button>
-          ))}
+          {(import.meta.env.VITE_PRESETS as string)
+            .split(",")
+            .map((preset: string) => (
+              <button
+                type="button"
+                key={preset}
+                onClick={() => {
+                  setValue("timestamp", Date.now() / 1000);
+                  setValue("name", preset);
+                  setValue("memo", "");
+                }}
+              >
+                {preset}
+              </button>
+            ))}
         </div>
       </form>
     </>
