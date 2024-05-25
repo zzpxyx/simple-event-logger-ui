@@ -110,7 +110,8 @@ function App() {
                 value={epochToDateTimeLocal(field.value)}
                 onChange={(e) =>
                   field.onChange(
-                    e.target.valueAsNumber / 1000 + timeZoneOffsetSeconds
+                    Math.floor(e.target.valueAsNumber / 1000) +
+                      timeZoneOffsetSeconds
                   )
                 }
               ></input>
@@ -128,7 +129,7 @@ function App() {
                 type="button"
                 key={preset}
                 onClick={() => {
-                  setValue("timestamp", Date.now() / 1000);
+                  setValue("timestamp", Math.floor(Date.now() / 1000));
                   setValue("name", preset);
                   setValue("memo", "");
                 }}
