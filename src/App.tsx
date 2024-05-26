@@ -71,33 +71,44 @@ function App() {
       <div className="three-columns-with-button">
         {events
           .sort((e1, e2) => e1.timestamp - e2.timestamp)
-          .map((event) => (
-            <Fragment key={event.id}>
-              <div>
-                {dateTimeFormat.format(new Date(event.timestamp * 1000))}
-              </div>
-              <div>{event.name}</div>
-              <div>{event.memo}</div>
-              <button
-                type="button"
-                onClick={() => {
-                  void (async () => {
-                    const deleteResponse = await fetch(
-                      `${baseUrl}/v1/events/${event.id}`,
-                      {
-                        method: "DELETE",
+          .map((event) => {
+            const displayDateTime = dateTimeFormat.format(
+              new Date(event.timestamp * 1000)
+            );
+            return (
+              <Fragment key={event.id}>
+                <div>{displayDateTime}</div>
+                <div>{event.name}</div>
+                <div>{event.memo}</div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    void (async () => {
+                      if (
+                        confirm(
+                          `Delete this event?\n${displayDateTime} ${event.name} ${event.memo}`
+                        )
+                      ) {
+                        const deleteResponse = await fetch(
+                          `${baseUrl}/v1/events/${event.id}`,
+                          {
+                            method: "DELETE",
+                          }
+                        );
+                        if (deleteResponse.ok) {
+                          setEvents(
+                            [...events].filter((e) => e.id != event.id)
+                          );
+                        }
                       }
-                    );
-                    if (deleteResponse.ok) {
-                      setEvents([...events].filter((e) => e.id != event.id));
-                    }
-                  })();
-                }}
-              >
-                -
-              </button>
-            </Fragment>
-          ))}
+                    })();
+                  }}
+                >
+                  -
+                </button>
+              </Fragment>
+            );
+          })}
       </div>
       <form
         className="three-columns-with-button"
