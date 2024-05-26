@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import "./App.css";
 
@@ -68,33 +68,39 @@ function App() {
 
   return (
     <>
-      {events
-        .sort((e1, e2) => e1.timestamp - e2.timestamp)
-        .map((event) => (
-          <div key={event.id}>
-            {dateTimeFormat.format(new Date(event.timestamp * 1000))}{" "}
-            {event.name} {event.memo}
-            <button
-              type="button"
-              onClick={() => {
-                void (async () => {
-                  const deleteResponse = await fetch(
-                    `${baseUrl}/v1/events/${event.id}`,
-                    {
-                      method: "DELETE",
+      <div className="three-columns-with-button">
+        {events
+          .sort((e1, e2) => e1.timestamp - e2.timestamp)
+          .map((event) => (
+            <Fragment key={event.id}>
+              <div>
+                {dateTimeFormat.format(new Date(event.timestamp * 1000))}
+              </div>
+              <div>{event.name}</div>
+              <div>{event.memo}</div>
+              <button
+                type="button"
+                onClick={() => {
+                  void (async () => {
+                    const deleteResponse = await fetch(
+                      `${baseUrl}/v1/events/${event.id}`,
+                      {
+                        method: "DELETE",
+                      }
+                    );
+                    if (deleteResponse.ok) {
+                      setEvents([...events].filter((e) => e.id != event.id));
                     }
-                  );
-                  if (deleteResponse.ok) {
-                    setEvents([...events].filter((e) => e.id != event.id));
-                  }
-                })();
-              }}
-            >
-              Delete
-            </button>
-          </div>
-        ))}
+                  })();
+                }}
+              >
+                -
+              </button>
+            </Fragment>
+          ))}
+      </div>
       <form
+        className="three-columns-with-button"
         onSubmit={(e) => {
           void handleSubmit(submitHandler)(e);
         }}
@@ -118,27 +124,31 @@ function App() {
             );
           }}
         ></Controller>
-        <input type="text" {...register("name", { required: true })}></input>
-        <input type="text" {...register("memo")}></input>
-        <button type="submit">Add</button>
-        <div>
-          {(import.meta.env.VITE_PRESETS as string)
-            .split(",")
-            .map((preset: string) => (
-              <button
-                type="button"
-                key={preset}
-                onClick={() => {
-                  setValue("timestamp", Math.floor(Date.now() / 1000));
-                  setValue("name", preset);
-                  setValue("memo", "");
-                }}
-              >
-                {preset}
-              </button>
-            ))}
-        </div>
+        <input
+          placeholder="Event"
+          type="text"
+          {...register("name", { required: true })}
+        ></input>
+        <input placeholder="Memo" type="text" {...register("memo")}></input>
+        <button type="submit">+</button>
       </form>
+      <div className="presets">
+        {(import.meta.env.VITE_PRESETS as string)
+          .split(",")
+          .map((preset: string) => (
+            <button
+              type="button"
+              key={preset}
+              onClick={() => {
+                setValue("timestamp", Math.floor(Date.now() / 1000));
+                setValue("name", preset);
+                setValue("memo", "");
+              }}
+            >
+              {preset}
+            </button>
+          ))}
+      </div>
     </>
   );
 }
