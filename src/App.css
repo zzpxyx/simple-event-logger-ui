@@ -6,6 +6,7 @@
 .three-columns-with-button {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr)) 1.5rem;
+  align-items: center;
   gap: 0.5rem;
   margin-top: 0.5rem;
   & > button {
@@ -24,13 +25,22 @@
   margin-top: 0.5rem;
   & > button {
     border: 0;
-    padding: 0.25rem 0.5rem;
+    padding: 0 0.25rem;
+    height: 1.5rem;
   }
 }
 
-input {
-  padding: 0;
+.load-button {
+  display: block;
+  width: 100%;
   border: 0;
+  padding: 0;
+  height: 1.5rem;
+}
+
+input {
+  border: 0;
+  padding: 0;
   height: 1.5rem;
   font: inherit;
 }

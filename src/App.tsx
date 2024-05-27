@@ -16,6 +16,7 @@ function App() {
   const baseUrl = "http://192.168.1.11:3000";
   const [events, setEvents] = useState<EventWithId[]>([]);
   const { register, handleSubmit, control, reset, setValue } = useForm<Event>();
+
   const submitHandler: SubmitHandler<Event> = async (data) => {
     const addResponse = await fetch(`${baseUrl}/v1/events/`, {
       method: "POST",
@@ -27,7 +28,15 @@ function App() {
     if (addResponse.ok) {
       reset();
       const addData = (await addResponse.json()) as EventWithId;
-      setEvents([...events, addData]);
+      if (events.length > 0 && addData.timestamp >= events[0].timestamp) {
+        const searchIndex = events.findIndex(
+          (event) => addData.timestamp < event.timestamp
+        );
+        const insertIndex = searchIndex == -1 ? events.length : searchIndex;
+        const newEvents = [...events];
+        newEvents.splice(insertIndex, 0, addData);
+        setEvents(newEvents);
+      }
     }
   };
   const timeZoneOffsetSeconds = new Date().getTimezoneOffset() * 60;
@@ -55,7 +64,9 @@ function App() {
       const eventsResponse = await fetch(`${baseUrl}/v1/events/`);
       if (!ignore && eventsResponse.ok) {
         const eventsData = (await eventsResponse.json()) as EventWithId[];
-        setEvents(eventsData);
+        if (eventsData.length > 0) {
+          setEvents([...eventsData, ...events]);
+        }
       }
     }
 
@@ -68,47 +79,62 @@ function App() {
 
   return (
     <>
+      <button
+        className="load-button"
+        type="button"
+        onClick={() => {
+          void (async () => {
+            const eventsResponse = await fetch(
+              `${baseUrl}/v1/events/?offset=${events.length}`
+            );
+            if (eventsResponse.ok) {
+              const eventsData = (await eventsResponse.json()) as EventWithId[];
+              if (eventsData.length > 0) {
+                setEvents([...eventsData, ...events]);
+              }
+            }
+          })();
+        }}
+      >
+        ^ ^ ^
+      </button>
       <div className="three-columns-with-button">
-        {events
-          .sort((e1, e2) => e1.timestamp - e2.timestamp)
-          .map((event) => {
-            const displayDateTime = dateTimeFormat.format(
-              new Date(event.timestamp * 1000)
-            );
-            return (
-              <Fragment key={event.id}>
-                <div>{displayDateTime}</div>
-                <div>{event.name}</div>
-                <div>{event.memo}</div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    void (async () => {
-                      if (
-                        confirm(
-                          `Delete this event?\n${displayDateTime} ${event.name} ${event.memo}`
-                        )
-                      ) {
-                        const deleteResponse = await fetch(
-                          `${baseUrl}/v1/events/${event.id}`,
-                          {
-                            method: "DELETE",
-                          }
-                        );
-                        if (deleteResponse.ok) {
-                          setEvents(
-                            [...events].filter((e) => e.id != event.id)
-                          );
+        {events.map((event) => {
+          const displayDateTime = dateTimeFormat.format(
+            new Date(event.timestamp * 1000)
+          );
+          return (
+            <Fragment key={event.id}>
+              <div>{displayDateTime}</div>
+              <div>{event.name}</div>
+              <div>{event.memo}</div>
+              <button
+                type="button"
+                onClick={() => {
+                  void (async () => {
+                    if (
+                      confirm(
+                        `Delete this event?\n${displayDateTime} ${event.name} ${event.memo}`
+                      )
+                    ) {
+                      const deleteResponse = await fetch(
+                        `${baseUrl}/v1/events/${event.id}`,
+                        {
+                          method: "DELETE",
                         }
+                      );
+                      if (deleteResponse.ok) {
+                        setEvents([...events].filter((e) => e.id != event.id));
                       }
-                    })();
-                  }}
-                >
-                  -
-                </button>
-              </Fragment>
-            );
-          })}
+                    }
+                  })();
+                }}
+              >
+                -
+              </button>
+            </Fragment>
+          );
+        })}
       </div>
       <form
         className="three-columns-with-button"
