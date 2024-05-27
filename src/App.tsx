@@ -36,6 +36,8 @@ function App() {
         const newEvents = [...events];
         newEvents.splice(insertIndex, 0, addData);
         setEvents(newEvents);
+      } else if (events.length === 0) {
+        setEvents([addData]);
       }
     }
   };
@@ -65,7 +67,7 @@ function App() {
       if (!ignore && eventsResponse.ok) {
         const eventsData = (await eventsResponse.json()) as EventWithId[];
         if (eventsData.length > 0) {
-          setEvents([...eventsData, ...events]);
+          setEvents([...eventsData]);
         }
       }
     }
@@ -171,7 +173,7 @@ function App() {
       </form>
       <div className="presets">
         {(import.meta.env.VITE_PRESETS as string)
-          .split(",")
+          ?.split(",")
           .map((preset: string) => (
             <button
               type="button"
