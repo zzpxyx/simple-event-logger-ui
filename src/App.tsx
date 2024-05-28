@@ -116,7 +116,8 @@ function App() {
                   void (async () => {
                     if (
                       confirm(
-                        `Delete this event?\n${displayDateTime} ${event.name} ${event.memo}`
+                        `The following event will be deleted and sent to the editing area. Confirm?` +
+                          `\n${displayDateTime} ${event.name} ${event.memo}`
                       )
                     ) {
                       const deleteResponse = await fetch(
@@ -127,6 +128,9 @@ function App() {
                       );
                       if (deleteResponse.ok) {
                         setEvents([...events].filter((e) => e.id != event.id));
+                        setValue("timestamp", event.timestamp);
+                        setValue("name", event.name);
+                        setValue("memo", event.memo);
                       }
                     }
                   })();
