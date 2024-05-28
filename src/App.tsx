@@ -13,7 +13,7 @@ interface EventWithId extends Event {
 }
 
 function App() {
-  const baseUrl = "http://192.168.1.11:3000";
+  const baseUrl = import.meta.env.VITE_BASE_URL as string;
   const [events, setEvents] = useState<EventWithId[]>([]);
   const { register, handleSubmit, control, reset, setValue } = useForm<Event>();
 
@@ -77,7 +77,7 @@ function App() {
     return () => {
       ignore = true;
     };
-  }, []);
+  }, [baseUrl]);
 
   return (
     <>

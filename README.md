@@ -1,11 +1,19 @@
 # Simple Event Logger UI
 
-## Presets
+## Environment Variables
 
-Use the environment variable to set up preset buttons for quicker event logging. For example, create a file `.env.development.local` under the project root with the following content. Note that the value is comma-delimited.
+The following environment variables can be set in environment files like `.env.development.local` or `.env.production.local` under the project root.
+
+### Base URL
+
+Set the base URL of the Simple Event Logger service using `VITE_BASE_URL`.
+
+### Presets
+
+Set preset buttons for quicker event logging using `VITE_PRESETS`. Note that the value is comma-delimited. For example:
 
 ```
 VITE_PRESETS=A,B,C
 ```
 
-Then there will be 3 preset buttons available when running the Vite dev server. Clicking a preset button will populate the input form with the current date time and the preset value as the event name. The memo is not populated.
+Then there will be 3 preset buttons available under the input form. Clicking a preset button will populate the input form with the current date time and the preset value as the event name. The memo is not populated.
